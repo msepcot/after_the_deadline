@@ -1,0 +1,43 @@
+After The Deadline - Ruby Library
+=================================
+
+Ruby library for playing with After The Deadline service.
+See http://www.afterthedeadline.com/api.slp for the API documentation.
+
+
+Example
+=======
+
+require 'after_the_deadline'
+atd = AfterTheDeadline.new("YOUR API KEY")
+results = atd.check "i made some grammer and spellin misteaks."
+pp results
+
+[#<AfterTheDeadline::Error:0x1015a8500
+  @description="Spelling",
+  @precontext="some",
+  @string="grammer",
+  @suggestions=["grammar", "grammes", "grimmer", "gramme", "rammer"],
+  @type="spelling",
+  @url=nil>,
+ #<AfterTheDeadline::Error:0x1015a8258
+  @description="Spelling",
+  @precontext="and",
+  @string="spellin",
+  @suggestions=["spell in", "spelling"],
+  @type="spelling",
+  @url=nil>,
+ #<AfterTheDeadline::Error:0x1015a7ee8
+  @description="Spelling",
+  @precontext="spellin",
+  @string="misteaks",
+  @suggestions=["mistake", "mistakes", "misleads", "misreads", "steaks"],
+  @type="spelling",
+  @url=nil>,
+ #<AfterTheDeadline::Error:0x1015a7ba0
+  @description="Make I uppercase",
+  @precontext=nil,
+  @string="i",
+  @suggestions=["I"],
+  @type="grammar",
+  @url="http://service.afterthedeadline.com/info.slp?text=i&tags=PRP">]
