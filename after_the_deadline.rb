@@ -17,10 +17,14 @@ class AfterTheDeadline
   # Returns list of AfterTheDeadline::Error objects.
   def check(data, key = nil)
     results = Crack::XML.parse(perform('/checkDocument', :key => key, :data => data))['results']
-    return if results.nil? # we have no errors in our data
+    return [] if results.nil? # we have no errors in our data
     
     raise "Server returned an error: #{results['message']}" if results['message']
-    results['error'].map { |e| AfterTheDeadline::Error.new(e) }
+    if results['error'].kind_of?(Array)
+      return results['error'].map { |e| AfterTheDeadline::Error.new(e) }
+    else
+      return [AfterTheDeadline::Error.new(results['error'])]
+    end
   end
   alias :check_document :check
   
