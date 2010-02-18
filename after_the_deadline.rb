@@ -11,9 +11,6 @@ class AfterTheDeadline
   
   BASE_URI = 'http://service.afterthedeadline.com'
   
-  # def initialize(key = nil)
-  #   self.api_key = key
-  # end
   class <<self
     def set_api_key(key)
       @@api_key = key
