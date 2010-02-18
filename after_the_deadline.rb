@@ -2,59 +2,69 @@ require 'crack'
 require 'net/http'
 require 'uri'
 
+def AfterTheDeadline(key)
+  AfterTheDeadline.set_api_key(key)
+end
+
 class AfterTheDeadline
-  attr_accessor :api_key
+  @@api_key = nil
   
   BASE_URI = 'http://service.afterthedeadline.com'
   
-  def initialize(key = nil)
-    self.api_key = key
-  end
-  
-  # Invoke checkDocument service with provided text and optional key.
-  # If no key is provided, a default key is used.
-  # 
-  # Returns list of AfterTheDeadline::Error objects.
-  def check(data, key = nil)
-    results = Crack::XML.parse(perform('/checkDocument', :key => key, :data => data))['results']
-    return [] if results.nil? # we have no errors in our data
+  # def initialize(key = nil)
+  #   self.api_key = key
+  # end
+  class <<self
+    def set_api_key(key)
+      @@api_key = key
+    end
     
-    raise "Server returned an error: #{results['message']}" if results['message']
-    if results['error'].kind_of?(Array)
-      return results['error'].map { |e| AfterTheDeadline::Error.new(e) }
-    else
-      return [AfterTheDeadline::Error.new(results['error'])]
+    # Invoke checkDocument service with provided text and optional key.
+    # If no key is provided, a default key is used.
+    # 
+    # Returns list of AfterTheDeadline::Error objects.
+    def check(data, key = nil)
+      results = Crack::XML.parse(perform('/checkDocument', :key => key, :data => data))['results']
+      return [] if results.nil? # we have no errors in our data
+      
+      raise "Server returned an error: #{results['message']}" if results['message']
+      if results['error'].kind_of?(Array)
+        return results['error'].map { |e| AfterTheDeadline::Error.new(e) }
+      else
+        return [AfterTheDeadline::Error.new(results['error'])]
+      end
+    end
+    alias :check_document :check
+    
+    # Invoke stats service with provided text and optional key.
+    # If no key is provided, a default key is used.
+    # 
+    # Returns AfterTheDeadline::Metrics object.
+    def metrics(data, key = nil)
+      results = Crack::XML.parse(perform('/stats', :key => key, :data => data))['scores']
+      return if results.nil? # we have no stats about our data
+      AfterTheDeadline::Metrics.new results['metric']
+    end
+    alias :stats :metrics
+    
+    # Invoke the verify service with optional key.
+    # If no key is provided, a default key is used.
+    # 
+    # Returns boolean indicating validity of key.
+    def verify(key = nil)
+      'valid' == perform('/verify', :key => key).strip
+    end
+    
+    def perform(action, params)
+      params[:key] ||= @@api_key
+      raise 'Please provide key as argument or set the api_key attribute first' unless params[:key]
+      response = Net::HTTP.post_form URI.parse(BASE_URI + action), params
+      raise "Unexpected response code from AtD service: #{response.code} #{response.message}" unless response.is_a? Net::HTTPSuccess
+      response.body
     end
   end
-  alias :check_document :check
   
-  # Invoke stats service with provided text and optional key.
-  # If no key is provided, a default key is used.
-  # 
-  # Returns AfterTheDeadline::Metrics object.
-  def metrics(data, key = nil)
-    results = Crack::XML.parse(perform('/stats', :key => key, :data => data))['scores']
-    return if results.nil? # we have no stats about our data
-    AfterTheDeadline::Metrics.new results['metric']
-  end
-  alias :stats :metrics
-  
-  # Invoke the verify service with optional key.
-  # If no key is provided, a default key is used.
-  # 
-  # Returns boolean indicating validity of key.
-  def verify(key = nil)
-    'valid' == perform('/verify', :key => key).strip
-  end
-  
-private
-  def perform(action, params)
-    params[:key] ||= self.api_key
-    raise 'Please provide key as argument or set the api_key attribute first' unless params[:key]
-    response = Net::HTTP.post_form URI.parse(BASE_URI + action), params
-    raise "Unexpected response code from AtD service: #{response.code} #{response.message}" unless response.is_a? Net::HTTPSuccess
-    response.body
-  end
+  private_class_method :perform
 end
 
 class AfterTheDeadline::Error
