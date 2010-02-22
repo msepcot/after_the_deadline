@@ -2,18 +2,36 @@ require 'crack'
 require 'net/http'
 require 'uri'
 
-def AfterTheDeadline(key)
+def AfterTheDeadline(key, dictionary = nil, types = AfterTheDeadline::DEFAULT_IGNORE_TYPES)
   AfterTheDeadline.set_api_key(key)
+  AfterTheDeadline.set_custom_dictionary(dictionary)
+  AfterTheDeadline.set_ignore_types(types)
+  nil
 end
 
 class AfterTheDeadline
   @@api_key = nil
+  @@custom_dictionary = []
+  @@ignore_types = []
   
   BASE_URI = 'http://service.afterthedeadline.com'
+  DEFAULT_IGNORE_TYPES = ['Bias Language', 'Cliches', 'Complex Expression', 'Diacritical Marks', 'Double Negatives', 'Hidden Verbs', 'Jargon Language', 'Passive voice', 'Phrases to Avoid', 'Redundant Expression']
   
   class <<self
     def set_api_key(key)
       @@api_key = key
+    end
+    
+    def set_custom_dictionary(dict)
+      if dict.kind_of?(Array)
+        @@custom_dictionary = dict
+      elsif dict.kind_of?(String)
+        File.open(dict) { |f| @@custom_dictionary = f.readlines.map &:strip }
+      end
+    end
+    
+    def set_ignore_types(types)
+      @@ignore_types = types if types.kind_of?(Array)
     end
     
     # Invoke checkDocument service with provided text and optional key.
@@ -25,11 +43,18 @@ class AfterTheDeadline
       return [] if results.nil? # we have no errors in our data
       
       raise "Server returned an error: #{results['message']}" if results['message']
-      if results['error'].kind_of?(Array)
-        return results['error'].map { |e| AfterTheDeadline::Error.new(e) }
+      errors = if results['error'].kind_of?(Array)
+        results['error'].map { |e| AfterTheDeadline::Error.new(e) }
       else
-        return [AfterTheDeadline::Error.new(results['error'])]
+        [AfterTheDeadline::Error.new(results['error'])]
       end
+      
+      # Remove any error types we don't care about
+      errors.reject! { |e| @@ignore_types.include?(e.description) }
+      
+      # Remove spelling errors from our custom dictionary
+      errors.reject! { |e| e.type == 'spelling' && @@custom_dictionary.include?(e.string) }
+      return errors
     end
     alias :check_document :check
     
