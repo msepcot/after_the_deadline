@@ -9,7 +9,7 @@ Examples
 ========
 
 require 'after_the_deadline' 
-AfterTheDeadline('xxx', nil, nil) # set the API Key, no custom dictionary, accept all error types
+AfterTheDeadline(nil, nil) # no custom dictionary, accept all error types
 
 # No Errors
 AfterTheDeadline.check 'this text is clean.'
@@ -36,7 +36,7 @@ Ignoring Specific Types of Errors
 =================================
 
 require 'after_the_deadline'
-AfterTheDeadline('xxx', nil, ['Passive voice'])
+AfterTheDeadline(nil, ['Passive voice'])
 
 # Skip the Passive Voice Error
 errors = AfterTheDeadline.check 'this text should be written in a passive voice.'
@@ -47,6 +47,6 @@ Using a Custom Dictionary
 =========================
 
 require 'after_the_deadline'
-AfterTheDeadline('xxx', ['Sepcot']) # or AfterTheDeadline('xxx', 'path/to/filename')
+AfterTheDeadline(['Sepcot']) # or AfterTheDeadline('path/to/filename')
 AfterTheDeadline.check "My last name, Sepcot, is very unique."
 => []

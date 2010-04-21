@@ -2,15 +2,13 @@ require 'crack'
 require 'net/http'
 require 'uri'
 
-def AfterTheDeadline(key, dictionary = nil, types = AfterTheDeadline::DEFAULT_IGNORE_TYPES)
-  AfterTheDeadline.set_api_key(key)
+def AfterTheDeadline(dictionary = nil, types = AfterTheDeadline::DEFAULT_IGNORE_TYPES)
   AfterTheDeadline.set_custom_dictionary(dictionary)
   AfterTheDeadline.set_ignore_types(types)
   nil
 end
 
 class AfterTheDeadline
-  @@api_key = nil
   @@custom_dictionary = []
   @@ignore_types = []
   
@@ -18,10 +16,6 @@ class AfterTheDeadline
   DEFAULT_IGNORE_TYPES = ['Bias Language', 'Cliches', 'Complex Expression', 'Diacritical Marks', 'Double Negatives', 'Hidden Verbs', 'Jargon Language', 'Passive voice', 'Phrases to Avoid', 'Redundant Expression']
   
   class <<self
-    def set_api_key(key)
-      @@api_key = key
-    end
-    
     def set_custom_dictionary(dict)
       if dict.kind_of?(Array)
         @@custom_dictionary = dict
@@ -34,12 +28,11 @@ class AfterTheDeadline
       @@ignore_types = types if types.kind_of?(Array)
     end
     
-    # Invoke checkDocument service with provided text and optional key.
-    # If no key is provided, a default key is used.
+    # Invoke the checkDocument service with provided text.
     # 
     # Returns list of AfterTheDeadline::Error objects.
-    def check(data, key = nil)
-      results = Crack::XML.parse(perform('/checkDocument', :key => key, :data => data))['results']
+    def check(data)
+      results = Crack::XML.parse(perform('/checkDocument', :data => data))['results']
       return [] if results.nil? # we have no errors in our data
       
       raise "Server returned an error: #{results['message']}" if results['message']
@@ -58,28 +51,17 @@ class AfterTheDeadline
     end
     alias :check_document :check
     
-    # Invoke stats service with provided text and optional key.
-    # If no key is provided, a default key is used.
+    # Invoke the stats service with provided text.
     # 
     # Returns AfterTheDeadline::Metrics object.
-    def metrics(data, key = nil)
-      results = Crack::XML.parse(perform('/stats', :key => key, :data => data))['scores']
+    def metrics(data)
+      results = Crack::XML.parse(perform('/stats', :data => data))['scores']
       return if results.nil? # we have no stats about our data
       AfterTheDeadline::Metrics.new results['metric']
     end
     alias :stats :metrics
     
-    # Invoke the verify service with optional key.
-    # If no key is provided, a default key is used.
-    # 
-    # Returns boolean indicating validity of key.
-    def verify(key = nil)
-      'valid' == perform('/verify', :key => key).strip
-    end
-    
     def perform(action, params)
-      params[:key] ||= @@api_key
-      raise 'Please provide key as argument or set the api_key attribute first' unless params[:key]
       response = Net::HTTP.post_form URI.parse(BASE_URI + action), params
       raise "Unexpected response code from AtD service: #{response.code} #{response.message}" unless response.is_a? Net::HTTPSuccess
       response.body
