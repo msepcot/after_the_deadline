@@ -99,6 +99,18 @@ class AfterTheDeadline::Error
     "#{self.string} (#{self.description})"
   end
 
+  def eql?(other)
+    self.class.equal?(other.class) &&
+      string == other.string &&
+      description == other.description &&
+      type == other.type
+  end
+  alias_method :==, :eql?
+
+  def hash
+    string.hash ^ description.hash ^ type.hash
+  end
+
 private
   attr_writer :string, :description, :precontext, :type, :suggestions, :url
 end
