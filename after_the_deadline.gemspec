@@ -1,14 +1,22 @@
-# -*- encoding: utf-8 -*-
+# coding: utf-8
 
-Gem::Specification.new do |gem|
-  gem.name          = "after_the_deadline"
-  gem.version       = "0.1.0"
-  gem.authors       = ["Michael J. Sepcot"]
-  gem.email         = ["michael.sepcot@gmail.com"]
-  gem.summary       = %q{A ruby library for playing with After The Deadline service}
+Gem::Specification.new do |spec|
+  spec.name          = 'after_the_deadline'
+  spec.version       = '0.1.1'
+  spec.authors       = ['Michael J. Sepcot']
+  spec.email         = ['developer@sepcot.com']
+  spec.description   = %q{A ruby library for working with the After The Deadline service.}
+  spec.summary       = %q{A ruby library for working with the After The Deadline service.}
+  spec.homepage      = 'https://github.com/msepcot/after_the_deadline'
+  spec.license       = 'MIT'
 
-  gem.files         = `git ls-files`.split($/)
-  gem.require_paths = ["lib"]
+  spec.files         = `git ls-files`.split($/)
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ['lib']
 
-  gem.add_runtime_dependency 'crack', '~> 0.3.2'
+  spec.add_development_dependency 'bundler', '~> 1.3'
+  spec.add_development_dependency 'rake'
+
+  spec.add_dependency 'crack'
 end
