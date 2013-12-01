@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = 'after_the_deadline'
-  spec.version       = '0.1.2'
+  spec.version       = '0.1.3'
   spec.authors       = ['Michael J. Sepcot']
   spec.email         = ['developer@sepcot.com']
   spec.description   = %q{A ruby library for working with the After The Deadline service.}

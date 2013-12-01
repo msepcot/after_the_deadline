@@ -9,12 +9,14 @@ def AfterTheDeadline(dictionary = nil, types = AfterTheDeadline::DEFAULT_IGNORE_
 end
 
 class AfterTheDeadline
+  BASE_URI = 'http://service.afterthedeadline.com'
+  DEFAULT_IGNORE_TYPES = ['Bias Language', 'Cliches', 'Complex Expression', 'Diacritical Marks', 'Double Negatives', 'Hidden Verbs', 'Jargon Language', 'Passive voice', 'Phrases to Avoid', 'Redundant Expression']
+  SUPPORTED_LANGUAGES = %w(en fr de es pt)
+
   @@custom_dictionary = []
   @@ignore_types = []
   @@api_key = nil
-
-  BASE_URI = 'http://service.afterthedeadline.com'
-  DEFAULT_IGNORE_TYPES = ['Bias Language', 'Cliches', 'Complex Expression', 'Diacritical Marks', 'Double Negatives', 'Hidden Verbs', 'Jargon Language', 'Passive voice', 'Phrases to Avoid', 'Redundant Expression']
+  @uri = BASE_URI
 
   class <<self
     def set_custom_dictionary(dict)
@@ -31,6 +33,16 @@ class AfterTheDeadline
 
     def set_api_key(key)
       @@api_key = key
+    end
+
+    def set_language(language)
+      unless AfterTheDeadline::SUPPORTED_LANGUAGES.include? language.downcase
+        raise AfterTheDeadline::Exception.new ("Unsupported language #{language}. Supported languages are #{AfterTheDeadline::SUPPORTED_LANGUAGES}")
+      end
+
+      @uri = 'en'.casecmp(language) == 0 ? BASE_URI : "http://#{language.downcase}.service.afterthedeadline.com"
+      # do not return anything (the assignation in this case)
+      nil
     end
 
     # Invoke the checkDocument service with provided text.
@@ -68,7 +80,7 @@ class AfterTheDeadline
 
     def perform(action, params)
       params[:key] = @@api_key if @@api_key
-      response = Net::HTTP.post_form URI.parse(BASE_URI + action), params
+      response = Net::HTTP.post_form URI.parse("#{@uri}#{action}"), params
       raise "Unexpected response code from AtD service: #{response.code} #{response.message}" unless response.is_a? Net::HTTPSuccess
       response.body
     end
@@ -132,3 +144,10 @@ class AfterTheDeadline::Metrics
 private
   attr_writer :spell, :grammar, :stats, :style
 end
+
+class AfterTheDeadline::Exception < StandardError
+  def initialize(msg = "Something went wrong")
+    super
+  end
+end
+
