@@ -64,6 +64,20 @@ Or install it yourself as:
     AfterTheDeadline.check "My last name, Sepcot, is very unique."
     => []
 
+## Multilanguage
+
+After the deadline service provides 5 languages:
+
+* English (en, default)
+* French (fr)
+* German (de)
+* Spanish (es)
+* Portuguese (pt)
+
+If no language is set English is choosen by default. To set another language simply set it:
+
+    AfterTheDeadline.set_language('de') # possible values en, fr, de, es, pt
+
 ## Contributing
 
 1. Fork it
