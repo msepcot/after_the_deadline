@@ -36,11 +36,12 @@ class AfterTheDeadline
     end
 
     def set_language(language)
-      unless AfterTheDeadline::SUPPORTED_LANGUAGES.include? language.downcase
+      language.downcase!
+      unless AfterTheDeadline::SUPPORTED_LANGUAGES.include? language
         raise AfterTheDeadline::Exception.new ("Unsupported language #{language}. Supported languages are #{AfterTheDeadline::SUPPORTED_LANGUAGES}")
       end
 
-      @uri = 'en'.casecmp(language) == 0 ? BASE_URI : "http://#{language.downcase}.service.afterthedeadline.com"
+      @uri = 'en'.eql?(language) ? BASE_URI : "http://#{language}.service.afterthedeadline.com"
       # do not return anything (the assignation in this case)
       nil
     end
