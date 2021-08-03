@@ -1,7 +1,7 @@
 # After The Deadline - Ruby Library
 
 Ruby library for working with After The Deadline service.
-See http://www.afterthedeadline.com/api.slp for the API documentation.
+See https://www.afterthedeadline.com/api.html for the API documentation.
 
 ## Installation
 
